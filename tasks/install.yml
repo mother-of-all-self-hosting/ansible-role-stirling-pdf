@@ -1,5 +1,17 @@
 ---
 
+- name: Inject warning role for Stirling-PDF is no longer actively maintained
+      ansible.builtin.set_fact:
+        devture_playbook_runtime_messages_list: |
+          {{
+            devture_playbook_runtime_messages_list | default([])
+            +
+            [
+              "NOTE: The role for Stirling-PDF is no longer actively maintained. While Stirling-PDF itself continues to be actively developed, this role does not support Stirling-PDF v2 and no further updates are planned.\n\nConsider using one of the following alternatives in the MASH-Playbook instead: \n- [BentoPDF](https://github.com/mother-of-all-self-hosting/mash-playbook/blob/main/docs/services/bentopdf.md) \n- [OmniTools](https://github.com/mother-of-all-self-hosting/mash-playbook/blob/main/docs/services/omnitools.md) \n\nYou can ignore this warning, by setting stirling_pdf_show_warning = false"
+            ]
+          }}
+      when: "stirling_pdf_show_warning"
+
 - name: Ensure stirling_pdf network is created in Docker
   community.docker.docker_network:
     enable_ipv6: "{{ devture_systemd_docker_base_ipv6_enabled }}"

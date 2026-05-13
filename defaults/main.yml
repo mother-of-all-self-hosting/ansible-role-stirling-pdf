@@ -3,6 +3,8 @@
 stirling_pdf_enabled: true
 stirling_pdf_identifier: stirling_pdf
 
+stirling_pdf_show_warning: true
+
 stirling_pdf_hostname: ''
 
 # The path at which stirling_pdf is served.
