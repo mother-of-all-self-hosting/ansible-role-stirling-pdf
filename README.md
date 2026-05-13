@@ -1,3 +1,14 @@
+# Warning
+This role is no longer actively maintained. While Stirling-PDF itself continues to be actively developed, this role does not support Stirling-PDF v2 and no further updates are planned.
+
+Consider using one of the following alternatives in the MASH-Playbook instead: 
+
+- [BentoPDF](https://github.com/mother-of-all-self-hosting/mash-playbook/blob/main/docs/services/bentopdf.md)
+- [OmniTools](https://github.com/mother-of-all-self-hosting/mash-playbook/blob/main/docs/services/omnitools.md)
+
+You can ignore this warning, by setting `stirling_pdf_show_warning = false`
+
+
 # ansible-role-stirling_pdf
 An ansible role developed for the MASH-Playbook to install Stirling PDF.
 It is inspired by the following projects:
