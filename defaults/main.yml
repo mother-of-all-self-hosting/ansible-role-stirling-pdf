@@ -30,7 +30,7 @@ stirling_pdf_container_tmpfs_size: "100m"
 
 stirling_pdf_extra_config: ''
 
-# to download calibre onto stirling-pdf enabling pdf to/from book and advanced html conversion
+# to download calibre onto Stirling PDF enabling pdf to/from book and advanced html conversion
 stirling_pdf_install_calibre: false
 
 stirling_pdf_systemd_required_services_list: "{{ stirling_pdf_systemd_required_services_list_default + stirling_pdf_systemd_required_services_list_auto + stirling_pdf_systemd_required_services_list_custom }}"
