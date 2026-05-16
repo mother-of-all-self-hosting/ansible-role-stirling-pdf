@@ -1,7 +1,22 @@
+---
 galaxy_info:
-  role_name: stirling_pdf
   author: Bergruebe
-  namespace: bergruebe
-  description: Ansible role to install and configure Stirling PDF
+  company: mash
+  role_name: stirling_pdf
+  namespace: mash
+  description: Stirling PDF
+  platforms:
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+    - name: ArchLinux
+      versions:
+        - all
+    - name: EL
+      versions:
+        - all
   license: AGPL-3.0-or-later
-  min_ansible_version: '2.1'
+  min_ansible_version: "2.1"
