@@ -75,17 +75,6 @@ stirling_pdf_locale: 'en_GB'
 # By default this is set to all private IPs (https://datatracker.ietf.org/doc/html/rfc1918#section-3)
 stirling_pdf_trusted_proxies: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
 
-# Additional environment variables to pass to the Stirling PDF container.
-# You can use this to further influence the default configuration.
-#
-# Example:
-# stirling_pdf_environment_variables_extension: |
-#   stirling_pdf_STORAGE_BACKEND=s3
-#   stirling_pdf_STORAGE_S3_ENDPOINT=minio:9000
-#   stirling_pdf_STORAGE_S3_BUCKET=something
-#   stirling_pdf_STORAGE_S3_SECRET_KEY=verysecret
-stirling_pdf_environment_variables_extension: ''
-
 middlewares: []
 
 # stirling_pdf_container_labels_traefik_enabled controls whether labels to assist a Traefik reverse-proxy will be attached to the container.
@@ -181,3 +170,37 @@ stirling_pdf_hsts_preload_enabled: false
 #   my.label=1
 #   another.label="here"
 stirling_pdf_container_labels_additional_labels: ''
+
+# Controls how long to wait for the container to stop gracefully before killing it.
+stirling_pdf_container_stop_grace_time_seconds: "{{ devture_systemd_docker_base_container_stop_grace_time_seconds }}"
+
+# Controls how long the pre-start cleanup should wait for stale container-name release
+# before failing startup explicitly.
+stirling_pdf_container_cleanup_timeout_seconds: "{{ devture_systemd_docker_base_container_cleanup_timeout_seconds }}"
+
+# Controls the delay between pre-start cleanup retries.
+stirling_pdf_container_cleanup_retry_delay_seconds: "{{ devture_systemd_docker_base_container_cleanup_retry_delay_seconds }}"
+
+# Shell command used in the systemd pre-start phase to deterministically remove a stale
+# container and wait until Docker releases its name.
+stirling_pdf_container_cleanup_command: |
+  i=0;
+  while [ "$i" -lt {{ stirling_pdf_container_cleanup_timeout_seconds }} ]; do
+  {{ devture_systemd_docker_base_host_command_docker }} stop -t {{ stirling_pdf_container_stop_grace_time_seconds }} {{ stirling_pdf_identifier }} >/dev/null 2>&1 || true;
+  {{ devture_systemd_docker_base_host_command_docker }} rm -f {{ stirling_pdf_identifier }} >/dev/null 2>&1 || true;
+  if {{ devture_systemd_docker_base_host_command_docker }} container inspect {{ stirling_pdf_identifier }} >/dev/null 2>&1; then
+  i=$((i + 1));
+  sleep {{ stirling_pdf_container_cleanup_retry_delay_seconds }};
+  continue;
+  fi;
+  if {{ devture_systemd_docker_base_host_command_docker }} info >/dev/null 2>&1; then
+  exit 0;
+  fi;
+  echo "Failed to query Docker daemon while cleaning up {{ stirling_pdf_identifier }}" >&2;
+  exit 1;
+  done;
+  echo "Failed to remove stale container {{ stirling_pdf_identifier }} after {{ stirling_pdf_container_cleanup_timeout_seconds }} attempts" >&2;
+  exit 1
+
+# Additional environment variables
+stirling_pdf_environment_variables_additional_variables: ""
