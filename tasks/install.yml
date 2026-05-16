@@ -14,7 +14,7 @@
         [
           "NOTE: This role is in maintenance mode. While Stirling PDF itself continues to be actively developed, this role is configured to install version 1 (" + stirling_pdf_version + ") and will not support version 2, because it enforces Open Core license since v2.0.0.
 
-          Consider using one of the following free alternatives instead:
+          Consider using one of the following free (as in speech) alternatives instead:
           - ansible-role-bentopdf: https://radicle.network/nodes/seed.radicle.garden/rad%3Az2bgVhWju6shYSwtdKb7v3eoSL1Pt
           - ansible-role-omnitools: https://github.com/mother-of-all-self-hosting/ansible-role-omnitools
 
