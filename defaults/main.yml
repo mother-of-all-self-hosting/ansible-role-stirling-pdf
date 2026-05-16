@@ -165,6 +165,28 @@ stirling_pdf_systemd_wanted_services_list_default: []
 stirling_pdf_systemd_wanted_services_list_auto: []
 stirling_pdf_systemd_wanted_services_list_custom: []
 
+# Default Stirling PDF configuration template which covers the generic use case.
+# You can customize it by controlling the various variables inside it.
+#
+# For a more advanced customization, you can extend the default (see `stirling_pdf_configuration_extension_yaml`)
+# or completely replace this variable with your own template.
+stirling_pdf_configuration_yaml: "{{ lookup('template', 'templates/settings.yml.j2') }}"
+
+stirling_pdf_configuration_extension_yaml: |
+  # Your custom YAML configuration for Stirling PDF goes here.
+  # This configuration extends the default starting configuration (`stirling_pdf_configuration_yaml`).
+  #
+  # You can override individual variables from the default configuration, or introduce new ones.
+  #
+  # If you need something more special, you can take full control by
+  # completely redefining `stirling_pdf_configuration_yaml`.
+
+stirling_pdf_configuration_extension: "{{ stirling_pdf_configuration_extension_yaml | from_yaml if stirling_pdf_configuration_extension_yaml | from_yaml is mapping else {} }}"
+
+# Holds the final Stirling PDF configuration (a combination of the default and its extension).
+# You most likely don't need to touch this variable. Instead, see `stirling_pdf_configuration_yaml`.
+stirling_pdf_configuration: "{{ stirling_pdf_configuration_yaml | from_yaml | combine(stirling_pdf_configuration_extension, recursive=true) }}"
+
 # Controls how long to wait for the container to stop gracefully before killing it.
 stirling_pdf_container_stop_grace_time_seconds: "{{ devture_systemd_docker_base_container_stop_grace_time_seconds }}"
 
@@ -199,8 +221,6 @@ stirling_pdf_container_cleanup_command: |
 stirling_pdf_show_warning: true
 
 stirling_pdf_locale: "en_GB"
-
-stirling_pdf_extra_config: ""
 
 # Control if calibre is downloaded onto Stirling PDF
 stirling_pdf_install_calibre: false

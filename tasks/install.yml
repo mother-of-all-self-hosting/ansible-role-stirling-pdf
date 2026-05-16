@@ -62,13 +62,14 @@
     - labels
   register: stirling_pdf_support_files_result
 
-- name: Ensure Stirling PDF extra config is deployed
-  ansible.builtin.template:
-    src: "{{ role_path }}/templates/extra_config.j2"
+- name: Ensure Stirling PDF configuration file installed
+  ansible.builtin.copy:
+    content: "{{ stirling_pdf_configuration | to_nice_yaml(indent=2, width=999999) }}"
     dest: "{{ stirling_pdf_data_path }}/config/settings.yml"
+    mode: "0660"
     owner: "{{ stirling_pdf_uid }}"
     group: "{{ stirling_pdf_gid }}"
-    mode: "0660"
+  register: stirling_pdf_config_file_result
 
 - name: Ensure Stirling PDF container image is pulled via community.docker.docker_image_pull
   when: devture_systemd_docker_base_container_image_pull_method == 'ansible-module'
@@ -123,6 +124,7 @@
     stirling_pdf_restart_necessary: >-
       {{
         stirling_pdf_support_files_result.changed | default(false)
+        or stirling_pdf_config_file_result.changed | default(false)
         or stirling_pdf_systemd_service_result.changed | default(false)
         or stirling_pdf_container_image_pull_result_ansible_module.changed | default(false)
         or stirling_pdf_container_image_pull_result_command.changed | default(false)
