@@ -113,7 +113,7 @@
 
 - name: Ensure Stirling PDF systemd service is present
   ansible.builtin.template:
-    src: "{{ role_path }}/templates/systemd/stirling_pdf.service.j2"
+    src: "{{ role_path }}/templates/systemd/stirling-pdf.service.j2"
     dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ stirling_pdf_identifier }}.service"
     mode: "0644"
   register: stirling_pdf_systemd_service_result
