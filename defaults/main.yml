@@ -39,9 +39,9 @@ stirling_pdf_container_image_registry_prefix_upstream_default: docker.stirlingpd
 # The base container network. It will be auto-created by this role if it doesn't exist already.
 stirling_pdf_container_network: "{{ stirling_pdf_identifier }}"
 
-# Controls whether the Stirling PDF container exposes its HTTP port (as defined by `stirling_pdf_container_http_port`).
+# Specify how the container publishes its HTTP port (as defined by `stirling_pdf_container_http_port`).
 #
-# Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:8731"), or empty string to not expose.
+# Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:2586"), or empty string to not expose.
 stirling_pdf_container_http_host_bind_port: ""
 
 # The port number in the container
