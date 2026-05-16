@@ -20,7 +20,7 @@ stirling_pdf_gid: ''
 
 stirling_pdf_base_path: "/{{ stirling_pdf_identifier }}"
 stirling_pdf_data_path: "{{ stirling_pdf_base_path }}/data"
-stirling_pdf_trainingData_path: "{{ stirling_pdf_data_path }}/trainingData" # noqa var-naming
+stirling_pdf_trainingdata_path: "{{ stirling_pdf_data_path }}/trainingData"
 stirling_pdf_logs_path: "{{ stirling_pdf_data_path }}/logs"
 
 # temporary folder used for processing - large pdfs may require larger space

@@ -51,7 +51,7 @@
     group: "{{ stirling_pdf_gid }}"
   with_items:
     - {path: "{{ stirling_pdf_data_path }}", when: true}
-    - {path: "{{ stirling_pdf_trainingData_path }}", when: true}
+    - {path: "{{ stirling_pdf_trainingdata_path }}", when: true}
     - {path: "{{ stirling_pdf_logs_path }}", when: true}
     - {path: "{{ stirling_pdf_data_path }}/config", when: true}
     - {path: "{{ stirling_pdf_data_path }}/customFiles", when: true}
