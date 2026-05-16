@@ -31,8 +31,10 @@ stirling_pdf_hostname: ""
 stirling_pdf_path_prefix: /
 
 stirling_pdf_container_image: "{{ stirling_pdf_container_image_registry_prefix }}stirlingtools/stirling-pdf:{{ stirling_pdf_container_image_tag }}"
-stirling_pdf_container_image_registry_prefix: docker.stirlingpdf.com/
 stirling_pdf_container_image_tag: "{{ stirling_pdf_version }}"
+stirling_pdf_container_image_registry_prefix: "{{ stirling_pdf_container_image_registry_prefix_upstream }}"
+stirling_pdf_container_image_registry_prefix_upstream: "{{ stirling_pdf_container_image_registry_prefix_upstream_default }}"
+stirling_pdf_container_image_registry_prefix_upstream_default: docker.stirlingpdf.com/
 
 # The base container network. It will be auto-created by this role if it doesn't exist already.
 stirling_pdf_container_network: "{{ stirling_pdf_identifier }}"
