@@ -1,10 +1,10 @@
+# SPDX-FileCopyrightText: 2023 Slavi Pantaleev
 # SPDX-FileCopyrightText: 2024 Bergrübe
-# SPDX-FileCopyrightText: 2026 Suguru Hirahara
+# SPDX-FileCopyrightText: 2025, 2026 Suguru Hirahara
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-
 - name: Check existence of Stirling PDF systemd service
   ansible.builtin.stat:
     path: "{{ devture_systemd_docker_base_systemd_path }}/{{ stirling_pdf_identifier }}.service"
@@ -13,17 +13,54 @@
 - name: Uninstall Stirling PDF systemd services and files
   when: stirling_pdf_service_stat.stat.exists | bool
   block:
-    - name: Ensure Stirling PDF service is stopped
+    - name: Ensure Stirling PDF systemd service is stopped
       ansible.builtin.service:
         name: "{{ stirling_pdf_identifier }}"
         state: stopped
+        enabled: false
         daemon_reload: true
-    - name: Ensure Stirling PDF service doesn't exist
+
+    - name: Ensure Stirling PDF systemd service does not exist
       ansible.builtin.file:
-        dest: "{{ devture_systemd_docker_base_systemd_path }}/{{ stirling_pdf_identifier }}.service"
+        path: "{{ devture_systemd_docker_base_systemd_path }}/{{ stirling_pdf_identifier }}.service"
         state: absent
 
-    - name: Ensure Stirling PDF base path is files deleted (make sure to delete node data)
+    - name: Ensure Stirling PDF support files do not exist
       ansible.builtin.file:
-        path: "{{ stirling_pdf_base_path }}"
+        path: "{{ stirling_pdf_base_path }}/{{ item }}"
         state: absent
+      with_items:
+        - env
+        - labels
+
+    - name: Ensure Stirling PDF local data path does not exist if empty
+      ansible.builtin.command:
+        cmd: "rmdir {{ stirling_pdf_data_path }}"
+      register: stirling_pdf_data_path_deletion_result
+      changed_when: stirling_pdf_data_path_deletion_result.rc == 0
+      failed_when: false
+
+    - name: Ensure Stirling PDF base path does not exist if empty
+      ansible.builtin.command:
+        cmd: "rmdir {{ stirling_pdf_base_path }}"
+      register: stirling_pdf_base_path_deletion_result
+      changed_when: stirling_pdf_base_path_deletion_result.rc == 0
+      failed_when: false
+
+- name: Check existence of Stirling PDF local data path
+  ansible.builtin.stat:
+    path: "{{ stirling_pdf_data_path }}"
+  register: stirling_pdf_data_path_stat
+
+# We just want to notify the user. Deleting data is too destructive.
+- name: Inject the message about the remaining Stirling PDF local data path
+  when: stirling_pdf_data_path_stat.stat.exists | bool
+  ansible.builtin.set_fact:
+    devture_playbook_runtime_messages_list: |
+      {{
+        devture_playbook_runtime_messages_list | default([])
+        +
+        [
+          "Note: As the local Stirling PDF instance has been removed, some old data remains in `" + stirling_pdf_data_path + "`. Feel free to delete it."
+        ]
+      }}
