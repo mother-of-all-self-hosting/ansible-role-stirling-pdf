@@ -12,7 +12,7 @@
 
 stirling_pdf_enabled: true
 
-stirling_pdf_identifier: stirling_pdf
+stirling_pdf_identifier: stirling-pdf
 stirling_pdf_base_path: "/{{ stirling_pdf_identifier }}"
 stirling_pdf_data_path: "{{ stirling_pdf_base_path }}/data"
 stirling_pdf_trainingdata_path: "{{ stirling_pdf_data_path }}/trainingData"
