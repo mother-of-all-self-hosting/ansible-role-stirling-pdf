@@ -41,7 +41,6 @@
     group: "{{ stirling_pdf_gid }}"
   with_items:
     - {path: "{{ stirling_pdf_base_path }}", when: true}
-    - {path: "{{ stirling_pdf_config_path }}", when: true}
 
 - name: Ensure Stirling PDF data, log and trainingData path exists
   ansible.builtin.file:
@@ -62,7 +61,7 @@
 - name: Ensure Stirling PDF traefik labels are installed
   ansible.builtin.template:
     src: "{{ role_path }}/templates/labels.j2"
-    dest: "{{ stirling_pdf_config_path }}/labels"
+    dest: "{{ stirling_pdf_base_path }}/labels"
     owner: "{{ stirling_pdf_uid }}"
     group: "{{ stirling_pdf_gid }}"
     mode: "0640"
@@ -70,7 +69,7 @@
 - name: Ensure Stirling PDF configuration is deployed
   ansible.builtin.template:
     src: "{{ role_path }}/templates/env.j2"
-    dest: "{{ stirling_pdf_config_path }}/env"
+    dest: "{{ stirling_pdf_base_path }}/env"
     owner: "{{ stirling_pdf_uid }}"
     group: "{{ stirling_pdf_gid }}"
     mode: "0640"

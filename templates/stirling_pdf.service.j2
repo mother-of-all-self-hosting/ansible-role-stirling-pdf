@@ -33,8 +33,8 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       {% if stirling_pdf_container_http_host_bind_port %}
       -p {{ stirling_pdf_container_http_host_bind_port }}:{{ stirling_pdf_container_http_port }} \
       {% endif %}
-      --env-file={{ stirling_pdf_env_path }} \
-      --label-file={{ stirling_pdf_config_path }}/labels \
+      --env-file={{ stirling_pdf_base_path }}/env \
+      --label-file={{ stirling_pdf_base_path }}/labels \
       {% for mount in stirling_pdf_container_additional_mounts %}
       --mount {{ mount }} \
       {% endfor %}

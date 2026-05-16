@@ -1,4 +1,6 @@
+# SPDX-FileCopyrightText: 2023 Slavi Pantaleev
 # SPDX-FileCopyrightText: 2024 Bergrübe
+# SPDX-FileCopyrightText: 2025, 2026 Suguru Hirahara
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
@@ -10,6 +12,8 @@
       Please change your configuration to rename the variable (`{{ item.old }}` -> `{{ item.new }}`).
   when: "lookup('ansible.builtin.varnames', ('^' + item.old + '$'), wantlist=True) | length > 0"
   with_items:
+    - { "old": "stirling_pdf_config_path", "new": "<removed>" }
+    - { "old": "stirling_pdf_env_path", "new": "<removed>" }
     - { "old": "stirling_pdf_environment_variables_extension", "new": "stirling_pdf_environment_variables_additional_variables" }
 
 - name: Fail if required Stirling PDF settings not defined
