@@ -35,8 +35,8 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       {% endif %}
       --env-file={{ stirling_pdf_base_path }}/env \
       --label-file={{ stirling_pdf_base_path }}/labels \
-      {% for mount in stirling_pdf_container_additional_mounts %}
-      --mount {{ mount }} \
+      {% for volume in stirling_pdf_container_additional_volumes %}
+      --mount type={{ volume.type | default('bind' if '/' in volume.src else 'volume') }},src={{ volume.src }},dst={{ volume.dst }}{{ (',' + volume.options) if volume.options | default('') else '' }} \
       {% endfor %}
       --mount type=bind,src={{ stirling_pdf_logs_path }},dst=/logs \
       --mount type=bind,src={{ stirling_pdf_data_path }}/config,dst=/configs \

@@ -15,6 +15,7 @@
     - { "old": "stirling_pdf_config_path", "new": "<removed>" }
     - { "old": "stirling_pdf_env_path", "new": "<removed>" }
     - { "old": "stirling_pdf_trainingData_path", "new": "stirling_pdf_trainingdata_path" }
+    - { "old": "stirling_pdf_container_additional_mounts", "new": "stirling_pdf_container_additional_volumes" }
     - { "old": "stirling_pdf_environment_variables_extension", "new": "stirling_pdf_environment_variables_additional_variables" }
     - { "old": "stirling_pdf_container_image_force_pull", "new": "<removed> (the new community.docker.docker_image_pull module handles this natively)" }
 
