@@ -27,7 +27,7 @@ stirling_pdf_gid: ""
 stirling_pdf_hostname: ""
 
 # The path at which Stirling PDF is served.
-# This value must either be `/` or not end with a slash (e.g. `/pdf`).
+# This value must either be `/` or not end with a slash (e.g. `/stirling-pdf`).
 stirling_pdf_path_prefix: /
 
 stirling_pdf_container_image: "{{ stirling_pdf_container_image_registry_prefix }}stirlingtools/stirling-pdf:{{ stirling_pdf_container_image_tag }}"
@@ -67,15 +67,22 @@ stirling_pdf_container_additional_volumes_auto: []
 stirling_pdf_container_additional_volumes_custom: []
 
 # stirling_pdf_container_labels_traefik_enabled controls whether labels to assist a Traefik reverse-proxy will be attached to the container.
-# See `roles/custom/stirling_pdf_stirling_pdf/templates/labels.j2` for details.
+# See `../templates/labels.j2` for details.
 #
-# To inject your own other container labels, see `stirling_pdf_container_labels_additional_labels`.
-stirling_pdf_container_labels_traefik_enabled: false
-stirling_pdf_container_labels_traefik_docker_network: ""
-stirling_pdf_container_labels_traefik_entrypoints: web-secure
+# To inject your own other container labels, see `stirling_pdf_container_labels_additional_labels_custom`.
+stirling_pdf_container_labels_traefik_enabled: true
+stirling_pdf_container_labels_traefik_docker_network: "{{ stirling_pdf_container_network }}"
+stirling_pdf_container_labels_traefik_hostname: "{{ stirling_pdf_hostname }}"
+# The path prefix must either be `/` or not end with a slash (e.g. `/stirling-pdf`).
+stirling_pdf_container_labels_traefik_path_prefix: "{{ stirling_pdf_path_prefix }}"
+stirling_pdf_container_labels_traefik_rule: "Host(`{{ stirling_pdf_container_labels_traefik_hostname }}`){% if stirling_pdf_container_labels_traefik_path_prefix != '/' %} && PathPrefix(`{{ stirling_pdf_container_labels_traefik_path_prefix }}`){% endif %}"
 stirling_pdf_container_labels_traefik_priority: 0
+stirling_pdf_container_labels_traefik_entrypoints: web-secure
 stirling_pdf_container_labels_traefik_tls: "{{ stirling_pdf_container_labels_traefik_entrypoints != 'web' }}"
 stirling_pdf_container_labels_traefik_tls_certResolver: default  # noqa var-naming
+stirling_pdf_container_labels_traefik_middleware_basic_auth_enabled: false
+# See: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/basicauth/
+stirling_pdf_container_labels_traefik_middleware_basic_auth_users: ""
 
 # Controls which additional headers to attach to all HTTP requests.
 # To add your own custom request headers, use `stirling_pdf_container_labels_traefik_additional_response_headers_custom`
@@ -98,13 +105,16 @@ stirling_pdf_container_labels_traefik_additional_response_headers_auto: |
 stirling_pdf_container_labels_traefik_additional_response_headers_custom: {}
 
 # stirling_pdf_container_labels_additional_labels contains a multiline string with additional labels to add to the container label file.
-# See `roles/custom/collabora_online/templates/labels.j2` for details.
+# See `../templates/labels.j2` for details.
+# To add your own custom labels, use `stirling_pdf_container_labels_additional_labels_custom`
 #
 # Example:
-# stirling_pdf_container_labels_additional_labels: |
-#   my.label=1
-#   another.label="here"
-stirling_pdf_container_labels_additional_labels: ''
+# stirling_pdf_container_labels_additional_labels_custom:
+#   - my.label=1
+#   - another.label="here"
+stirling_pdf_container_labels_additional_labels: "{{ stirling_pdf_container_labels_additional_labels_auto + stirling_pdf_container_labels_additional_labels_custom }}"
+stirling_pdf_container_labels_additional_labels_auto: []
+stirling_pdf_container_labels_additional_labels_custom: []
 
 # Specify the size of the container's tmpfs volume
 stirling_pdf_container_tmpfs_size: "100m"
