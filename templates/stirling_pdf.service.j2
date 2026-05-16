@@ -1,5 +1,6 @@
 {#
 SPDX-FileCopyrightText: 2024 Bergrübe
+SPDX-FileCopyrightText: 2026 Suguru Hirahara
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 #}
@@ -21,27 +22,27 @@ ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_s
 ExecStartPre=-{{ devture_systemd_docker_base_host_command_sh }} -c '{{ devture_systemd_docker_base_host_command_docker }} rm {{ stirling_pdf_identifier }} 2>/dev/null || true'
 
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
-                --rm \
-                --name={{ stirling_pdf_identifier }} \
-                --log-driver=none \
-                --user={{ stirling_pdf_uid }}:{{ stirling_pdf_gid }} \
-                --cap-drop=ALL \
-{% if stirling_pdf_container_http_host_bind_port %}
-                -p {{ stirling_pdf_container_http_host_bind_port }}:{{ stirling_pdf_container_http_port }} \
-{% endif %}
-                --label-file={{ stirling_pdf_config_path }}/labels \
-                --network={{ stirling_pdf_container_network }} \
-{% for mount in stirling_pdf_container_additional_mounts %}
-                --mount {{ mount }} \
-{% endfor %}
-                --mount type=bind,src={{ stirling_pdf_logs_path }},dst=/logs \
-                --mount type=bind,src={{ stirling_pdf_data_path }}/config,dst=/configs \
-                --mount type=bind,src={{ stirling_pdf_trainingData_path }},dst=/usr/share/tessdata \
-                --mount type=bind,src={{ stirling_pdf_data_path }}/customFiles,dst=/customFiles \
-                --mount type=bind,src={{ stirling_pdf_data_path }}/pipeline,dst=/pipeline \
-                --tmpfs=/tmp:rw,noexec,nosuid,size={{ stirling_pdf_container_tmpfs_size }} \
-                --env-file={{ stirling_pdf_env_path }} \
-                {{ stirling_pdf_container_image }}
+      --rm \
+      --name={{ stirling_pdf_identifier }} \
+      --log-driver=none \
+      --user={{ stirling_pdf_uid }}:{{ stirling_pdf_gid }} \
+      --cap-drop=ALL \
+      {% if stirling_pdf_container_http_host_bind_port %}
+      -p {{ stirling_pdf_container_http_host_bind_port }}:{{ stirling_pdf_container_http_port }} \
+      {% endif %}
+      --label-file={{ stirling_pdf_config_path }}/labels \
+      --network={{ stirling_pdf_container_network }} \
+      {% for mount in stirling_pdf_container_additional_mounts %}
+      --mount {{ mount }} \
+      {% endfor %}
+      --mount type=bind,src={{ stirling_pdf_logs_path }},dst=/logs \
+      --mount type=bind,src={{ stirling_pdf_data_path }}/config,dst=/configs \
+      --mount type=bind,src={{ stirling_pdf_trainingData_path }},dst=/usr/share/tessdata \
+      --mount type=bind,src={{ stirling_pdf_data_path }}/customFiles,dst=/customFiles \
+      --mount type=bind,src={{ stirling_pdf_data_path }}/pipeline,dst=/pipeline \
+      --tmpfs=/tmp:rw,noexec,nosuid,size={{ stirling_pdf_container_tmpfs_size }} \
+      --env-file={{ stirling_pdf_env_path }} \
+      {{ stirling_pdf_container_image }}
 
 {% for network in stirling_pdf_container_additional_networks %}
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} network connect {{ network }} {{ stirling_pdf_identifier }}
