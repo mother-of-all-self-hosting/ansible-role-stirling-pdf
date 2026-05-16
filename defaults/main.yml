@@ -11,7 +11,7 @@ stirling_pdf_show_warning: true
 
 stirling_pdf_hostname: ''
 
-# The path at which stirling_pdf is served.
+# The path at which Stirling PDF is served.
 # This value must either be `/` or not end with a slash (e.g. `/pdf`).
 stirling_pdf_path_prefix: /
 
@@ -57,7 +57,7 @@ stirling_pdf_container_network: '{{ stirling_pdf_identifier }}'
 
 stirling_pdf_container_http_port: 8080
 
-# Controls whether the stirling_pdf container exposes its HTTP port (as defined by `stirling_pdf_container_http_port`).
+# Controls whether the Stirling PDF container exposes its HTTP port (as defined by `stirling_pdf_container_http_port`).
 #
 # Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:8731"), or empty string to not expose.
 stirling_pdf_container_http_host_bind_port: ""
@@ -75,7 +75,7 @@ stirling_pdf_locale: 'en_GB'
 # By default this is set to all private IPs (https://datatracker.ietf.org/doc/html/rfc1918#section-3)
 stirling_pdf_trusted_proxies: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
 
-# Additional environment variables to pass to the stirling_pdf container.
+# Additional environment variables to pass to the Stirling PDF container.
 # You can use this to further influence the default configuration.
 #
 # Example:

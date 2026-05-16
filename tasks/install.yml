@@ -24,7 +24,7 @@
       }}
   when: "stirling_pdf_show_warning"
 
-- name: Ensure stirling_pdf network is created in Docker
+- name: Ensure Stirling PDF network is created in Docker
   community.docker.docker_network:
     enable_ipv6: "{{ devture_systemd_docker_base_ipv6_enabled }}"
     name: "{{ stirling_pdf_container_network }}"
@@ -32,7 +32,7 @@
     driver_options: "{{ devture_systemd_docker_base_container_networks_driver_options }}"
 
 
-- name: Ensure stirling_pdf path exists
+- name: Ensure Stirling PDF path exists
   ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
@@ -43,7 +43,7 @@
     - {path: "{{ stirling_pdf_base_path }}", when: true}
     - {path: "{{ stirling_pdf_config_path }}", when: true}
 
-- name: Ensure stirling_pdf data, log and trainingData path exists
+- name: Ensure Stirling PDF data, log and trainingData path exists
   ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
@@ -59,7 +59,7 @@
     - {path: "{{ stirling_pdf_data_path }}/pipeline", when: true}
 
 
-- name: Ensure stirling_pdf traefik labels are installed
+- name: Ensure Stirling PDF traefik labels are installed
   ansible.builtin.template:
     src: "{{ role_path }}/templates/labels.j2"
     dest: "{{ stirling_pdf_config_path }}/labels"
@@ -67,7 +67,7 @@
     group: "{{ stirling_pdf_gid }}"
     mode: "0640"
 
-- name: Ensure stirling_pdf configuration is deployed
+- name: Ensure Stirling PDF configuration is deployed
   ansible.builtin.template:
     src: "{{ role_path }}/templates/env.j2"
     dest: "{{ stirling_pdf_config_path }}/env"
@@ -75,7 +75,7 @@
     group: "{{ stirling_pdf_gid }}"
     mode: "0640"
 
-- name: Ensure stirling_pdf extra config is deployed
+- name: Ensure Stirling PDF extra config is deployed
   ansible.builtin.template:
     src: "{{ role_path }}/templates/extra_config.j2"
     dest: "{{ stirling_pdf_data_path }}/config/settings.yml"
@@ -83,7 +83,7 @@
     group: "{{ stirling_pdf_gid }}"
     mode: "0660"
 
-- name: Ensure stirling_pdf container image is pulled
+- name: Ensure Stirling PDF container image is pulled
   community.docker.docker_image:
     name: "{{ stirling_pdf_container_image }}"
     source: "{{ 'pull' if ansible_version.major > 2 or ansible_version.minor > 7 else omit }}"
