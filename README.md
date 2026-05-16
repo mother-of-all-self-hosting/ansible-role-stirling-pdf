@@ -11,7 +11,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 >[!WARNING]
 > This role is in maintenance mode. While Stirling PDF itself continues to be actively developed, this role is configured to install version 1 and will not support version 2, because it enforces Open Core license since [v2.0.0](https://github.com/Stirling-Tools/Stirling-PDF/releases/tag/v2.0.0).
 
-This is an [Ansible](https://www.ansible.com/) role which installs [Stirling PDF](github.com/Stirling-Tools/Stirling-PDF) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
+This is an [Ansible](https://www.ansible.com/) role which installs [Stirling PDF](https://github.com/Stirling-Tools/Stirling-PDF) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
 
 This role *implicitly* depends on:
 
