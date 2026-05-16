@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 Bergrübe
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
 # Warning
 This role is no longer actively maintained. While Stirling-PDF itself continues to be actively developed, this role does not support Stirling-PDF v2 and no further updates are planned.
 
