@@ -6,40 +6,21 @@ SPDX-FileCopyrightText: 2026 Suguru Hirahara
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
-# Warning
-This role is no longer actively maintained. While Stirling-PDF itself continues to be actively developed, this role does not support Stirling-PDF v2 and no further updates are planned.
+# Stirling PDF v1 Ansible role
 
-Consider using one of the following alternatives in the MASH-Playbook instead:
+>[!WARNING]
+> This role is in maintenance mode. While Stirling PDF itself continues to be actively developed, this role is configured to install version 1 and will not support version 2, because it enforces Open Core license since [v2.0.0](https://github.com/Stirling-Tools/Stirling-PDF/releases/tag/v2.0.0).
 
-- [BentoPDF](https://github.com/mother-of-all-self-hosting/mash-playbook/blob/main/docs/services/bentopdf.md)
-- [OmniTools](https://github.com/mother-of-all-self-hosting/mash-playbook/blob/main/docs/services/omnitools.md)
+This is an [Ansible](https://www.ansible.com/) role which installs [Stirling PDF](github.com/Stirling-Tools/Stirling-PDF) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
 
-You can ignore this warning, by setting `stirling_pdf_show_warning = false`
+This role *implicitly* depends on:
 
+- [`com.devture.ansible.role.playbook_help`](https://github.com/devture/com.devture.ansible.role.playbook_help)
+- [`com.devture.ansible.role.systemd_docker_base`](https://github.com/devture/com.devture.ansible.role.systemd_docker_base)
 
-# ansible-role-stirling_pdf
-An ansible role developed for the MASH-Playbook to install Stirling PDF.
-It is inspired by the following projects:
+Check [`defaults/main.yml`](defaults/main.yml) for the full list of supported options.
 
-- [Mother of All Self Hosting - GotoSocial Role](https://github.com/mother-of-all-self-hosting/ansible-role-gotosocial)
-- [Mother of All Self Hosting - Gitea Role](https://github.com/mother-of-all-self-hosting/ansible-role-gitea)
-
-## Requirements
-
-- Docker
-- Ansible
-- [MASH playbook](https://github.com/mother-of-all-self-hosting/mash-playbook)
-
-## Usage
-See the guide in  [MASH playbook](https://github.com/mother-of-all-self-hosting/mash-playbook/blob/main/docs/services/stirling-pdf.md) repo.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Support
-
-If you encounter any problems or have any questions, please open an issue on GitHub.
+💡 For an Ansible playbook which integrates this role and makes it easier to use, see the [Mother-of-All-Self-Hosting Ansible playbook](https://github.com/mother-of-all-self-hosting/mash-playbook).
 
 ## Development
 
