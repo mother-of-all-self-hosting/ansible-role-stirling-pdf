@@ -8,62 +8,43 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
+# Project source code URL: https://github.com/Stirling-Tools/Stirling-PDF
 
 stirling_pdf_enabled: true
+
 stirling_pdf_identifier: stirling_pdf
-
-stirling_pdf_show_warning: true
-
-stirling_pdf_hostname: ''
-
-# The path at which Stirling PDF is served.
-# This value must either be `/` or not end with a slash (e.g. `/pdf`).
-stirling_pdf_path_prefix: /
-
-stirling_pdf_uid: ''
-stirling_pdf_gid: ''
-
 stirling_pdf_base_path: "/{{ stirling_pdf_identifier }}"
 stirling_pdf_data_path: "{{ stirling_pdf_base_path }}/data"
 stirling_pdf_trainingdata_path: "{{ stirling_pdf_data_path }}/trainingData"
 stirling_pdf_logs_path: "{{ stirling_pdf_data_path }}/logs"
 
-# temporary folder used for processing - large pdfs may require larger space
-stirling_pdf_container_tmpfs_size: "100m"
-
-stirling_pdf_extra_config: ''
-
-# to download calibre onto Stirling PDF enabling pdf to/from book and advanced html conversion
-stirling_pdf_install_calibre: false
-
-stirling_pdf_systemd_required_services_list: "{{ stirling_pdf_systemd_required_services_list_default + stirling_pdf_systemd_required_services_list_auto + stirling_pdf_systemd_required_services_list_custom }}"
-stirling_pdf_systemd_required_services_list_default: "{{ [devture_systemd_docker_base_docker_service_name] if devture_systemd_docker_base_docker_service_name else [] }}"
-stirling_pdf_systemd_required_services_list_auto: []
-stirling_pdf_systemd_required_services_list_custom: []
-
-stirling_pdf_systemd_wanted_services_list: "{{ stirling_pdf_systemd_wanted_services_list_default + stirling_pdf_systemd_wanted_services_list_auto + stirling_pdf_systemd_wanted_services_list_custom }}"
-stirling_pdf_systemd_wanted_services_list_default: []
-stirling_pdf_systemd_wanted_services_list_auto: []
-stirling_pdf_systemd_wanted_services_list_custom: []
-
-stirling_pdf_container_additional_mounts: []
-
 stirling_pdf_version: 1.5.0-fat
 
-# Project source code URL: https://github.com/Stirling-Tools/Stirling-PDF
+stirling_pdf_uid: ""
+stirling_pdf_gid: ""
+
+# The hostname at which Stirling PDF is served.
+stirling_pdf_hostname: ""
+
+# The path at which Stirling PDF is served.
+# This value must either be `/` or not end with a slash (e.g. `/pdf`).
+stirling_pdf_path_prefix: /
+
 stirling_pdf_container_image: "{{ stirling_pdf_container_image_registry_prefix }}stirlingtools/stirling-pdf:{{ stirling_pdf_container_image_tag }}"
 stirling_pdf_container_image_registry_prefix: docker.stirlingpdf.com/
 stirling_pdf_container_image_tag: "{{ stirling_pdf_version }}"
 stirling_pdf_container_image_force_pull: "{{ stirling_pdf_container_image.endswith(':latest') }}"
 
-stirling_pdf_container_network: '{{ stirling_pdf_identifier }}'
-
-stirling_pdf_container_http_port: 8080
+# The base container network. It will be auto-created by this role if it doesn't exist already.
+stirling_pdf_container_network: "{{ stirling_pdf_identifier }}"
 
 # Controls whether the Stirling PDF container exposes its HTTP port (as defined by `stirling_pdf_container_http_port`).
 #
 # Takes an "<ip>:<port>" or "<port>" value (e.g. "127.0.0.1:8731"), or empty string to not expose.
 stirling_pdf_container_http_host_bind_port: ""
+
+# The port number in the container
+stirling_pdf_container_http_port: 8080
 
 # A list of additional container networks that the container would be connected to.
 # The role does not create these networks, so make sure they already exist.
@@ -72,13 +53,7 @@ stirling_pdf_container_additional_networks: "{{ stirling_pdf_container_additiona
 stirling_pdf_container_additional_networks_auto: []
 stirling_pdf_container_additional_networks_custom: []
 
-stirling_pdf_locale: 'en_GB'
-
-# Will set GTS_TRUSTED_PROXIES
-# By default this is set to all private IPs (https://datatracker.ietf.org/doc/html/rfc1918#section-3)
-stirling_pdf_trusted_proxies: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
-
-middlewares: []
+stirling_pdf_container_additional_mounts: []
 
 # stirling_pdf_container_labels_traefik_enabled controls whether labels to assist a Traefik reverse-proxy will be attached to the container.
 # See `roles/custom/stirling_pdf_stirling_pdf/templates/labels.j2` for details.
@@ -97,7 +72,6 @@ stirling_pdf_container_labels_traefik_additional_request_headers: "{{ stirling_p
 stirling_pdf_container_labels_traefik_additional_request_headers_auto: {}
 stirling_pdf_container_labels_traefik_additional_request_headers_custom: {}
 
-
 # Controls which additional headers to attach to all HTTP responses.
 # To add your own custom response headers, use `stirling_pdf_container_labels_traefik_additional_response_headers_custom`
 stirling_pdf_container_labels_traefik_additional_response_headers: "{{ stirling_pdf_container_labels_traefik_additional_response_headers_auto | combine(stirling_pdf_container_labels_traefik_additional_response_headers_custom) }}"
@@ -112,6 +86,18 @@ stirling_pdf_container_labels_traefik_additional_response_headers_auto: |
     | combine ({'Strict-Transport-Security': stirling_pdf_http_header_strict_transport_security} if stirling_pdf_http_header_strict_transport_security and stirling_pdf_container_labels_traefik_tls else {})
   }}
 stirling_pdf_container_labels_traefik_additional_response_headers_custom: {}
+
+# stirling_pdf_container_labels_additional_labels contains a multiline string with additional labels to add to the container label file.
+# See `roles/custom/collabora_online/templates/labels.j2` for details.
+#
+# Example:
+# stirling_pdf_container_labels_additional_labels: |
+#   my.label=1
+#   another.label="here"
+stirling_pdf_container_labels_additional_labels: ''
+
+# Specify the size of the container's tmpfs volume
+stirling_pdf_container_tmpfs_size: "100m"
 
 # Specifies the value of the `X-XSS-Protection` header
 # Stops pages from loading when they detect reflected cross-site scripting (XSS) attacks.
@@ -164,15 +150,17 @@ stirling_pdf_floc_optout_enabled: true
 # See: `stirling_pdf_http_header_strict_transport_security`
 stirling_pdf_hsts_preload_enabled: false
 
+# List of systemd services that the Stirling PDF systemd service depends on
+stirling_pdf_systemd_required_services_list: "{{ stirling_pdf_systemd_required_services_list_default + stirling_pdf_systemd_required_services_list_auto + stirling_pdf_systemd_required_services_list_custom }}"
+stirling_pdf_systemd_required_services_list_default: "{{ [devture_systemd_docker_base_docker_service_name] if devture_systemd_docker_base_docker_service_name else [] }}"
+stirling_pdf_systemd_required_services_list_auto: []
+stirling_pdf_systemd_required_services_list_custom: []
 
-# stirling_pdf_container_labels_additional_labels contains a multiline string with additional labels to add to the container label file.
-# See `roles/custom/collabora_online/templates/labels.j2` for details.
-#
-# Example:
-# stirling_pdf_container_labels_additional_labels: |
-#   my.label=1
-#   another.label="here"
-stirling_pdf_container_labels_additional_labels: ''
+# List of systemd services that the Stirling PDF systemd service wants
+stirling_pdf_systemd_wanted_services_list: "{{ stirling_pdf_systemd_wanted_services_list_default + stirling_pdf_systemd_wanted_services_list_auto + stirling_pdf_systemd_wanted_services_list_custom }}"
+stirling_pdf_systemd_wanted_services_list_default: []
+stirling_pdf_systemd_wanted_services_list_auto: []
+stirling_pdf_systemd_wanted_services_list_custom: []
 
 # Controls how long to wait for the container to stop gracefully before killing it.
 stirling_pdf_container_stop_grace_time_seconds: "{{ devture_systemd_docker_base_container_stop_grace_time_seconds }}"
@@ -204,6 +192,15 @@ stirling_pdf_container_cleanup_command: |
   done;
   echo "Failed to remove stale container {{ stirling_pdf_identifier }} after {{ stirling_pdf_container_cleanup_timeout_seconds }} attempts" >&2;
   exit 1
+
+stirling_pdf_show_warning: true
+
+stirling_pdf_locale: "en_GB"
+
+stirling_pdf_extra_config: ""
+
+# Control if calibre is downloaded onto Stirling PDF
+stirling_pdf_install_calibre: false
 
 # Additional environment variables
 stirling_pdf_environment_variables_additional_variables: ""
