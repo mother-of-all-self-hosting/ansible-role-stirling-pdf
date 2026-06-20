@@ -151,7 +151,7 @@ stirling_pdf_http_header_strict_transport_security: "max-age=31536000; includeSu
 # - https://amifloced.org/
 #
 # Of course, a better solution is to just stop using browsers (like Chrome), which participate in such tracking practices.
-# See: `stirling_pdf_content_permission_policy`
+# See: `stirling_pdf_http_header_permissions_policy`
 stirling_pdf_floc_optout_enabled: true
 
 # Controls if HSTS preloading is enabled
