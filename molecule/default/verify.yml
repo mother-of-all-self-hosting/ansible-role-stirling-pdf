@@ -1,0 +1,53 @@
+# SPDX-FileCopyrightText: 2026 Suguru Hirahara
+# SPDX-FileCopyrightText: 2026 spatterlight
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+---
+- name: Verify Stirling PDF systemd service
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Wait for Stirling PDF service to become active (up to 180s)
+      ansible.builtin.systemd:
+        name: stirling-pdf.service
+      register: stirling_pdf_service
+      until: stirling_pdf_service.status.ActiveState == 'active'
+      retries: 36
+      delay: 5
+
+    - name: Assert Stirling PDF service is active
+      ansible.builtin.assert:
+        that: stirling_pdf_service.status.ActiveState == 'active'
+        fail_msg: "stirling-pdf.service not active ({{ stirling_pdf_service.status.ActiveState }})"
+        success_msg: "stirling-pdf.service is active"
+
+    - name: Retrieve Stirling PDF service log for debugging
+      when: stirling_pdf_debug_service_enabled | bool
+      ansible.builtin.command:
+        cmd: journalctl -xeu stirling-pdf.service
+      changed_when: false
+
+    - name: Wait for Stirling PDF HTTP endpoint to respond (up to 10m)
+      ansible.builtin.uri:
+        url: "http://localhost:8080/"
+        method: GET
+        status_code: [200, 302]
+        follow_redirects: none
+      register: stirling_pdf_endpoint
+      until: stirling_pdf_endpoint.status in [200, 302]
+      retries: 120
+      delay: 5
+
+    - name: Assert Stirling PDF HTTP endpoint responds
+      ansible.builtin.assert:
+        that: stirling_pdf_endpoint.status in [200, 302]
+        fail_msg: "Stirling PDF did not respond as expected ({{ stirling_pdf_endpoint.status | default('no response') }})"
+        success_msg: "Stirling PDF responded with {{ stirling_pdf_endpoint.status }}"
+
+    - name: Show Stirling PDF systemd service status summary
+      ansible.builtin.debug:
+        msg:
+          - "Stirling PDF systemd: {{ stirling_pdf_service.status.ActiveState }}"
+          - "Stirling PDF HTTP: {{ stirling_pdf_endpoint.status }}"
