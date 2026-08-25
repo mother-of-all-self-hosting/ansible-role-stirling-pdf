@@ -18,6 +18,21 @@ stirling_pdf_data_path: "{{ stirling_pdf_base_path }}/data"
 stirling_pdf_trainingdata_path: "{{ stirling_pdf_data_path }}/trainingData"
 stirling_pdf_logs_path: "{{ stirling_pdf_data_path }}/logs"
 
+# The version of Stirling PDF to install, including the image variant suffix.
+#
+# The `-fat` variant is the one that bundles the external tooling (LibreOffice, OCR, …).
+# Do not drop the suffix or switch to `-ultra-lite`: the lighter variants answer
+# `403 This endpoint is disabled` for the tools that need that tooling
+# (e.g. `/api/v1/convert/file/pdf`), while still reporting the same version.
+#
+# This role stays on the v1 line on purpose (see `../README.md`), so Renovate is
+# restricted to 1.x `-fat` tags in `../.github/renovate.json`.
+#
+# `docker.stirlingpdf.com` (see `stirling_pdf_container_image_registry_prefix_upstream_default`
+# below) is a CDN in front of Docker Hub which serves the very same
+# `stirlingtools/stirling-pdf` repository - identical tag list, identical manifest
+# digests - so Renovate is pointed at Docker Hub directly, where lookups are most reliable.
+# renovate: datasource=docker depName=docker.io/stirlingtools/stirling-pdf versioning=docker
 stirling_pdf_version: 1.5.0-fat
 
 stirling_pdf_uid: ""

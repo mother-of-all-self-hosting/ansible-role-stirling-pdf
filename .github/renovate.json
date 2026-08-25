@@ -1,6 +1,22 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": [
+    "The `patch-automerge` preset is deliberately NOT extended here. Upstream closed the v1 line with v1.6.0 (2025-11-25, released as \"Last V1 release!\") and this role installs v1 only, so no further v1 patch release can ever appear for Renovate to automerge. Everything else (CI actions, tooling, Molecule dependencies) keeps automerging through the shared default preset.",
+    "If this role is ever pointed at a line that still receives patch releases, revisit this: the Molecule `default` scenario does exercise the bumped image (it asserts the running version and round-trips a real document through the conversion API), so the testing side of the bar is met."
+  ],
   "extends": [
     "github>mother-of-all-self-hosting/renovate-config#v1.0.0"
+  ],
+  "packageRules": [
+    {
+      "description": "This role installs Stirling PDF v1 only: v2.0.0 relicensed the project to Open Core (see ../README.md). Restrict proposals to 1.x tags of the `-fat` image variant, so that neither a major bump nor a switch to a variant with tools disabled can be proposed.",
+      "matchManagers": [
+        "custom.regex"
+      ],
+      "matchDepNames": [
+        "docker.io/stirlingtools/stirling-pdf"
+      ],
+      "allowedVersions": "/^1\\..*-fat$/"
+    }
   ]
 }
