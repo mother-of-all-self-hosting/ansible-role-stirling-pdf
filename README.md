@@ -10,6 +10,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 >[!WARNING]
 > This role is in maintenance mode. While Stirling PDF itself continues to be actively developed, this role is configured to install version 1 and will not support version 2, because it enforces Open Core license since [v2.0.0](https://github.com/Stirling-Tools/Stirling-PDF/releases/tag/v2.0.0).
+>
+> Version [1.6.0](https://github.com/Stirling-Tools/Stirling-PDF/releases/tag/v1.6.0) is upstream's last v1 release, so this role has a finite amount of upstream left to follow.
 
 This is an [Ansible](https://www.ansible.com/) role which installs [Stirling PDF](https://github.com/Stirling-Tools/Stirling-PDF) to run as a [Docker](https://www.docker.com/) container wrapped in a systemd service.
 
@@ -21,6 +23,41 @@ This role *implicitly* depends on:
 Check [`defaults/main.yml`](defaults/main.yml) for the full list of supported options.
 
 💡 For an Ansible playbook which integrates this role and makes it easier to use, see the [Mother-of-All-Self-Hosting Ansible playbook](https://github.com/mother-of-all-self-hosting/mash-playbook).
+
+## Things worth knowing before exposing it
+
+### There is no authentication by default
+
+This role does not enable Stirling PDF's login, so **anyone who can reach the service can use it**, and can therefore upload documents to it and download whatever is in its working directories. If you publish it on a public hostname through the reverse proxy, put something in front of it.
+
+Two ways to do that:
+
+- HTTP Basic authentication at the reverse proxy, through `stirling_pdf_container_labels_traefik_middleware_basic_auth_enabled` and `stirling_pdf_container_labels_traefik_middleware_basic_auth_users`
+- Stirling PDF's own login, through `stirling_pdf_environment_variables_additional_variables`:
+
+  ```yaml
+  stirling_pdf_environment_variables_additional_variables: |
+    SECURITY_ENABLELOGIN=true
+    SECURITY_INITIALLOGIN_USERNAME=your-username
+    SECURITY_INITIALLOGIN_PASSWORD=your-password
+  ```
+
+  These environment variables take effect even though `security.enableLogin` in the settings file that Stirling PDF maintains under `{{ stirling_pdf_data_path }}/config/settings.yml` keeps saying `false` - environment variables override that file rather than rewrite it.
+
+### It reports usage statistics by default
+
+On a fresh installation Stirling PDF turns its analytics (PostHog and the Scarf pixel) on by itself, because the setting it ships defaults to "ask the administrator", which a container deployment cannot do. To turn it off:
+
+```yaml
+stirling_pdf_environment_variables_additional_variables: |
+  SYSTEM_ENABLEANALYTICS=false
+```
+
+### Configure it through environment variables, not through the settings file
+
+Stirling PDF v1 replaces a partial `settings.yml` with its own defaults on startup, keeping only a file that is already complete. The settings file this role installs is a partial one, so `stirling_pdf_configuration_extension_yaml` (and the `stirling_pdf_configuration*` variables around it) does not currently reach the application - use `stirling_pdf_environment_variables_additional_variables` for anything you want to configure. Every setting can be given as an environment variable by upper-casing its path, as Stirling PDF's own settings file explains (`security.initialLogin.username` becomes `SECURITY_INITIALLOGIN_USERNAME`).
+
+The same rewriting is why this role's Molecule scenario has no idempotence stage.
 
 ## Development
 
