@@ -81,7 +81,7 @@
 
     - name: Inspect the Stirling PDF container
       ansible.builtin.command:
-        cmd: docker inspect stirling-pdf
+        cmd: docker container inspect stirling-pdf
       register: stirling_pdf_container_inspection
       changed_when: false
 
