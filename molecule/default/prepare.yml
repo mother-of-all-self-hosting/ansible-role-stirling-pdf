@@ -18,6 +18,11 @@
     - name: Ensure required packages are installed for Stirling PDF Molecule tests preparation
       ansible.builtin.package:
         name:
+          # Used by the verification playbook to upload documents to the
+          # conversion API. `ansible.builtin.uri` cannot do that: its
+          # `form-multipart` bodies carry `Content-Transfer-Encoding: base64`,
+          # which Tomcat does not decode.
+          - curl
           - python3-requests
         state: present
 

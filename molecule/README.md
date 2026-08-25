@@ -47,7 +47,15 @@ Currently there is one testing scenario available.
 
 ### `default`
 
-Tests a standard Stirling PDF installation.
+Tests a standard Stirling PDF installation, and verifies that:
+
+- the systemd service is active and the application reports itself up over its own status API;
+- the running version equals the one pinned in [`defaults/main.yml`](../defaults/main.yml), and the running container is built from that exact image tag (variant suffix included, which the application's own version report does not carry);
+- the container runs as the configured user;
+- the configured path prefix reached the process: the UI is served below it, and `/` answers `404` rather than the `200` an unconfigured container would give;
+- extra environment variables passed through `stirling_pdf_environment_variables_additional_variables` reached the process;
+- the configuration bind mount is live, i.e. the application expanded the settings file that the role installed;
+- the service does real work: a document is converted into a PDF through LibreOffice and its text extracted back out again, with the content surviving the round trip. This is what proves the pinned `-fat` image variant, whose whole point is that bundled tooling - the lighter variants answer `403 This endpoint is disabled` there while reporting the very same version.
 
 ## Running
 

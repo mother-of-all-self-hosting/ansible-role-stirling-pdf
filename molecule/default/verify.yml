@@ -1,15 +1,42 @@
+# SPDX-FileCopyrightText: 2026 Slavi Pantaleev
 # SPDX-FileCopyrightText: 2026 spatterlight
 # SPDX-FileCopyrightText: 2026 Suguru Hirahara
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-- name: Verify Stirling PDF systemd service
+- name: Verify Stirling PDF
   hosts: all
   become: true
   gather_facts: false
+
+  vars:
+    # Where the role puts the configuration file that the container mounts at
+    # `/configs`. It matches the role's defaults, which this scenario does not
+    # change, but is spelled out here because the role's own path variables are
+    # Jinja expressions that cannot be read out of `defaults/main.yml`.
+    stirling_pdf_molecule_settings_path: /stirling-pdf/data/config/settings.yml
+
+    stirling_pdf_molecule_work_path: /root/stirling-pdf-molecule
+
   tasks:
-    - name: Wait for Stirling PDF service to become active (up to 180s)
+    # Only leaf literals can be read this way, and only role-describing ones:
+    # anything the scenario tunes must come from the scenario's group_vars,
+    # which this would otherwise outrank. `stirling_pdf_version` is the literal
+    # that Renovate bumps, which is exactly what the running service is held
+    # against below.
+    - name: Read the role's defaults for Stirling PDF verification
+      ansible.builtin.include_vars:
+        file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
+        name: stirling_pdf_role_defaults
+
+    - name: Determine the Stirling PDF version the role pins
+      ansible.builtin.set_fact:
+        # `1.5.0-fat` -> `1.5.0`. The variant suffix names the image flavour and
+        # is not part of what the application reports about itself.
+        stirling_pdf_molecule_expected_version: "{{ stirling_pdf_role_defaults.stirling_pdf_version | regex_replace('-.*$', '') }}"
+
+    - name: Wait for the Stirling PDF systemd service to become active (up to 180s)
       ansible.builtin.systemd:
         name: stirling-pdf.service
       register: stirling_pdf_service
@@ -17,37 +44,236 @@
       retries: 36
       delay: 5
 
-    - name: Assert Stirling PDF service is active
+    - name: Assert the Stirling PDF systemd service is active
       ansible.builtin.assert:
         that: stirling_pdf_service.status.ActiveState == 'active'
         fail_msg: "stirling-pdf.service not active ({{ stirling_pdf_service.status.ActiveState }})"
         success_msg: "stirling-pdf.service is active"
 
-    - name: Retrieve Stirling PDF service log for debugging
+    - name: Retrieve the Stirling PDF service log for debugging
       when: stirling_pdf_debug_service_enabled | bool
       ansible.builtin.command:
         cmd: journalctl -xeu stirling-pdf.service
       changed_when: false
 
-    - name: Wait for Stirling PDF HTTP endpoint to respond (up to 10m)
+    # `Restart=always` keeps the unit `active` even while the container crash
+    # loops, and Stirling PDF is a Spring application that keeps the port closed
+    # for a while after startup, so readiness has to come from the application.
+    - name: Wait for Stirling PDF to report itself up (up to 10m)
       ansible.builtin.uri:
-        url: "http://localhost:8080/"
+        url: "{{ stirling_pdf_molecule_base_url }}/api/v1/info/status"
         method: GET
-        status_code: [200, 302]
+        status_code: [200]
         follow_redirects: none
-      register: stirling_pdf_endpoint
-      until: stirling_pdf_endpoint.status in [200, 302]
+      register: stirling_pdf_status
+      until: (stirling_pdf_status.status | default(0)) == 200 and (stirling_pdf_status.json.status | default('')) == 'UP'
       retries: 120
       delay: 5
 
-    - name: Assert Stirling PDF HTTP endpoint responds
+    - name: Assert Stirling PDF runs the version the role pins
       ansible.builtin.assert:
-        that: stirling_pdf_endpoint.status in [200, 302]
-        fail_msg: "Stirling PDF did not respond as expected ({{ stirling_pdf_endpoint.status | default('no response') }})"
-        success_msg: "Stirling PDF responded with {{ stirling_pdf_endpoint.status }}"
+        that: stirling_pdf_status.json.version == stirling_pdf_molecule_expected_version
+        fail_msg: >-
+          Stirling PDF reports version {{ stirling_pdf_status.json.version }},
+          but defaults/main.yml pins {{ stirling_pdf_role_defaults.stirling_pdf_version }}
+          (expected {{ stirling_pdf_molecule_expected_version }})
+        success_msg: "Stirling PDF runs {{ stirling_pdf_status.json.version }}, as pinned by stirling_pdf_version"
 
-    - name: Show Stirling PDF systemd service status summary
+    - name: Inspect the Stirling PDF container
+      ansible.builtin.command:
+        cmd: docker inspect stirling-pdf
+      register: stirling_pdf_container_inspection
+      changed_when: false
+
+    - name: Parse the Stirling PDF container inspection
+      ansible.builtin.set_fact:
+        stirling_pdf_molecule_container: "{{ (stirling_pdf_container_inspection.stdout | from_json)[0] }}"
+
+    # The image label carries the full pinned tag, variant suffix included,
+    # which the application's own version report does not: an `ultra-lite`
+    # image reports the very same version as the `fat` one.
+    - name: Assert the running container is built from the pinned image tag
+      ansible.builtin.assert:
+        that: >-
+          stirling_pdf_molecule_container.Config.Labels['org.opencontainers.image.version']
+          == stirling_pdf_role_defaults.stirling_pdf_version
+        fail_msg: >-
+          The running container is labelled
+          {{ stirling_pdf_molecule_container.Config.Labels['org.opencontainers.image.version'] | default('(no version label)') }},
+          but defaults/main.yml pins {{ stirling_pdf_role_defaults.stirling_pdf_version }}
+        success_msg: "The running container is built from {{ stirling_pdf_role_defaults.stirling_pdf_version }}"
+
+    - name: Assert the container runs as the configured user
+      ansible.builtin.assert:
+        that: stirling_pdf_molecule_container.Config.User == (stirling_pdf_uid | string) + ':' + (stirling_pdf_gid | string)
+        fail_msg: >-
+          The container runs as {{ stirling_pdf_molecule_container.Config.User | default('(unset)') }},
+          not as {{ stirling_pdf_uid }}:{{ stirling_pdf_gid }}
+        success_msg: "The container runs as {{ stirling_pdf_uid }}:{{ stirling_pdf_gid }}"
+
+    # An unconfigured Stirling PDF container serves its UI here. Getting a 404
+    # instead is what proves that `SYSTEM_ROOTURIPATH`, rendered by the role's
+    # `env` template out of `stirling_pdf_path_prefix`, reached the process.
+    - name: Request the Stirling PDF UI at the root path
+      ansible.builtin.uri:
+        url: http://localhost:8080/
+        method: GET
+        status_code: [200, 404]
+        follow_redirects: none
+      register: stirling_pdf_root_response
+
+    - name: Assert Stirling PDF does not serve outside its configured path prefix
+      ansible.builtin.assert:
+        that: stirling_pdf_root_response.status == 404
+        fail_msg: >-
+          Stirling PDF answered {{ stirling_pdf_root_response.status }} at `/`, which is what an
+          unconfigured container does - `stirling_pdf_path_prefix`
+          ({{ stirling_pdf_molecule_path_prefix }}) did not reach the process
+        success_msg: "Stirling PDF serves only below {{ stirling_pdf_molecule_path_prefix }}"
+
+    - name: Fetch the Stirling PDF UI at the configured path prefix
+      ansible.builtin.uri:
+        url: "{{ stirling_pdf_molecule_base_url }}/"
+        method: GET
+        status_code: [200]
+        follow_redirects: none
+        return_content: true
+      register: stirling_pdf_ui_response
+
+    # `UI_APPNAME` is passed through `stirling_pdf_environment_variables_additional_variables`,
+    # so finding it rendered into the page proves that the free-form part of the
+    # role's `env` template is read by the application too.
+    - name: Assert the UI carries the name configured through the role
+      ansible.builtin.assert:
+        that: stirling_pdf_molecule_app_name in stirling_pdf_ui_response.content
+        fail_msg: >-
+          The Stirling PDF UI does not carry the configured application name
+          ({{ stirling_pdf_molecule_app_name }}), so
+          `stirling_pdf_environment_variables_additional_variables` did not reach the process
+        success_msg: "The Stirling PDF UI carries the configured application name"
+
+    # Stirling PDF rewrites `/configs/settings.yml` on startup, expanding
+    # whatever the role wrote (`{}` by default) into its fully commented
+    # settings file. Seeing that expansion on the host proves the bind mount the
+    # role sets up is the one the application actually writes through.
+    - name: Read the Stirling PDF settings file the role installed
+      ansible.builtin.slurp:
+        src: "{{ stirling_pdf_molecule_settings_path }}"
+      register: stirling_pdf_settings_file
+
+    - name: Assert Stirling PDF wrote through the configuration bind mount
+      ansible.builtin.assert:
+        that:
+          - "'enableLogin' in (stirling_pdf_settings_file.content | b64decode)"
+          - "'defaultLocale' in (stirling_pdf_settings_file.content | b64decode)"
+        fail_msg: >-
+          {{ stirling_pdf_molecule_settings_path }} still holds what the role wrote, so the
+          container is not mounting it at /configs
+        success_msg: "Stirling PDF expanded the settings file through the configuration bind mount"
+
+    - name: Ensure a working directory for the Stirling PDF conversion probe exists
+      ansible.builtin.file:
+        path: "{{ stirling_pdf_molecule_work_path }}"
+        state: directory
+        mode: "0700"
+
+    - name: Write the document for the Stirling PDF conversion probe
+      ansible.builtin.copy:
+        content: "{{ stirling_pdf_molecule_marker }}\n"
+        dest: "{{ stirling_pdf_molecule_work_path }}/probe.txt"
+        mode: "0600"
+
+    # The uploads below go through `curl` rather than `ansible.builtin.uri`.
+    # `uri` with `body_format: form-multipart` sends file parts with
+    # `Content-Transfer-Encoding: base64`, which Tomcat does not decode (RFC 7578
+    # says form-data parts must not use it) - Stirling PDF then faithfully
+    # converts the base64 text, so the response is a real PDF holding the wrong
+    # content. The `multipart_encoding: 7or8bit` alternative fixes text parts but
+    # corrupts binary ones, which breaks the PDF upload below.
+    #
+    # A landing page is served happily by an image whose external tooling is
+    # missing, so the only honest check is to make the service do actual work.
+    # This endpoint runs the document through LibreOffice, which is bundled in
+    # the `-fat` image variant that the role pins and absent from the lighter
+    # ones: an `ultra-lite` image answers `403 This endpoint is disabled` here
+    # while reporting the exact same version.
+    - name: Convert a document to PDF through Stirling PDF
+      ansible.builtin.command:
+        argv:
+          - curl
+          - --silent
+          - --show-error
+          - --max-time
+          - "180"
+          - --output
+          - "{{ stirling_pdf_molecule_work_path }}/probe.pdf"
+          - --write-out
+          - "%{http_code} %{content_type}"
+          - --form
+          - "fileInput=@{{ stirling_pdf_molecule_work_path }}/probe.txt;type=text/plain"
+          - "{{ stirling_pdf_molecule_base_url }}/api/v1/convert/file/pdf"
+      register: stirling_pdf_conversion
+      changed_when: false
+
+    - name: Read the magic bytes of the converted document
+      ansible.builtin.command:
+        cmd: "head -c 5 {{ stirling_pdf_molecule_work_path }}/probe.pdf"
+      register: stirling_pdf_conversion_magic
+      changed_when: false
+
+    - name: Assert Stirling PDF produced a genuine PDF
+      ansible.builtin.assert:
+        that:
+          - stirling_pdf_conversion.stdout == '200 application/pdf'
+          - stirling_pdf_conversion_magic.stdout == '%PDF-'
+        fail_msg: >-
+          The conversion answered `{{ stirling_pdf_conversion.stdout }}` with a body starting
+          with `{{ stirling_pdf_conversion_magic.stdout }}`, which is not a PDF
+        success_msg: "Stirling PDF converted a document into a genuine PDF"
+
+    # Reading the text back out proves the conversion carried the content
+    # through, rather than producing a valid but empty (or wrongly encoded) PDF,
+    # and exercises the extraction side of the API as well.
+    - name: Extract the text back out of the converted document
+      ansible.builtin.command:
+        argv:
+          - curl
+          - --silent
+          - --show-error
+          - --max-time
+          - "180"
+          - --output
+          - "{{ stirling_pdf_molecule_work_path }}/probe-extracted.txt"
+          - --write-out
+          - "%{http_code}"
+          - --form
+          - "fileInput=@{{ stirling_pdf_molecule_work_path }}/probe.pdf;type=application/pdf"
+          - --form
+          - outputFormat=txt
+          - "{{ stirling_pdf_molecule_base_url }}/api/v1/convert/pdf/text"
+      register: stirling_pdf_extraction
+      changed_when: false
+
+    - name: Read the text extracted from the converted document
+      ansible.builtin.slurp:
+        src: "{{ stirling_pdf_molecule_work_path }}/probe-extracted.txt"
+      register: stirling_pdf_extracted_text
+
+    - name: Assert the converted document still carries its content
+      ansible.builtin.assert:
+        that:
+          - stirling_pdf_extraction.stdout == '200'
+          - stirling_pdf_molecule_marker in (stirling_pdf_extracted_text.content | b64decode)
+        fail_msg: >-
+          Extracting the text answered `{{ stirling_pdf_extraction.stdout }}` and gave
+          `{{ stirling_pdf_extracted_text.content | b64decode | trim }}`, which does not contain
+          {{ stirling_pdf_molecule_marker }}
+        success_msg: "The document survived the conversion round trip intact"
+
+    - name: Show the Stirling PDF verification summary
       ansible.builtin.debug:
         msg:
-          - "Stirling PDF systemd: {{ stirling_pdf_service.status.ActiveState }}"
-          - "Stirling PDF HTTP: {{ stirling_pdf_endpoint.status }}"
+          - "systemd: {{ stirling_pdf_service.status.ActiveState }}"
+          - "version: {{ stirling_pdf_status.json.version }} (pinned: {{ stirling_pdf_role_defaults.stirling_pdf_version }})"
+          - "path prefix: serves at {{ stirling_pdf_molecule_path_prefix }}, 404 at /"
+          - "conversion: round trip through LibreOffice and back to text succeeded"

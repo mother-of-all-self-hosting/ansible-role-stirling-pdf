@@ -31,12 +31,28 @@ provisioner:
         # Helper variables
         stirling_pdf_debug_service_enabled: false
 
+        # Where the verification playbook reaches the service, and the values it
+        # expects to find there. `stirling_pdf_molecule_path_prefix` deliberately
+        # differs from the role's default of `/`: an unconfigured Stirling PDF
+        # container serves its UI at `/` and answers 404 below any other prefix,
+        # so serving at `/stirling-pdf` (and *not* at `/`) can only be the result
+        # of the role's `env` template reaching the process.
+        stirling_pdf_molecule_path_prefix: /stirling-pdf
+        stirling_pdf_molecule_base_url: "http://localhost:8080{{ stirling_pdf_molecule_path_prefix }}"
+        # An arbitrary string that appears nowhere in the container image, used
+        # to tell a role-rendered configuration apart from the image's own.
+        stirling_pdf_molecule_app_name: MoleculeAppNamePin
+        stirling_pdf_molecule_marker: MoleculeConversionMarker
+
         # Variables for Stirling PDF
         stirling_pdf_uid: 1000
         stirling_pdf_gid: 1000
         stirling_pdf_hostname: localhost
+        stirling_pdf_path_prefix: "{{ stirling_pdf_molecule_path_prefix }}"
         stirling_pdf_container_labels_traefik_enabled: false
         stirling_pdf_container_http_host_bind_port: 8080
+        stirling_pdf_environment_variables_additional_variables: |
+          UI_APPNAME={{ stirling_pdf_molecule_app_name }}
   env:
     # Workaround for https://github.com/ansible/molecule/issues/4391
     ANSIBLE_ROLES_PATH: ${MOLECULE_PROJECT_DIRECTORY}/..:/.ansible/roles:/usr/share/ansible/roles:/etc/ansible/roles:~/.ansible/roles
