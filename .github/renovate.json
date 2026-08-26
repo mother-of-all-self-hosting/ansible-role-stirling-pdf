@@ -5,7 +5,7 @@
     "If this role is ever pointed at a line that still receives patch releases, revisit this: the Molecule `default` scenario does exercise the bumped image (it asserts the running version and round-trips a real document through the conversion API), so the testing side of the bar is met."
   ],
   "extends": [
-    "github>mother-of-all-self-hosting/renovate-config#v1.0.0"
+    "github>mother-of-all-self-hosting/renovate-config#v1.1.0"
   ],
   "packageRules": [
     {
