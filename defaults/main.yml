@@ -33,7 +33,7 @@ stirling_pdf_logs_path: "{{ stirling_pdf_data_path }}/logs"
 # `stirlingtools/stirling-pdf` repository - identical tag list, identical manifest
 # digests - so Renovate is pointed at Docker Hub directly, where lookups are most reliable.
 # renovate: datasource=docker depName=docker.io/stirlingtools/stirling-pdf versioning=docker
-stirling_pdf_version: 1.5.0-fat
+stirling_pdf_version: 1.6.0-fat
 
 stirling_pdf_uid: ""
 stirling_pdf_gid: ""
