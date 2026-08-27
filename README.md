@@ -53,12 +53,6 @@ stirling_pdf_environment_variables_additional_variables: |
   SYSTEM_ENABLEANALYTICS=false
 ```
 
-### Configure it through environment variables, not through the settings file
-
-Stirling PDF v1 replaces a partial `settings.yml` with its own defaults on startup, keeping only a file that is already complete. The settings file this role installs is a partial one, so `stirling_pdf_configuration_extension_yaml` (and the `stirling_pdf_configuration*` variables around it) does not currently reach the application - use `stirling_pdf_environment_variables_additional_variables` for anything you want to configure. Every setting can be given as an environment variable by upper-casing its path, as Stirling PDF's own settings file explains (`security.initialLogin.username` becomes `SECURITY_INITIALLOGIN_USERNAME`).
-
-The same rewriting is why this role's Molecule scenario has no idempotence stage.
-
 ## Development
 
 ### pre-commit
