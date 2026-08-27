@@ -24,17 +24,6 @@ Check [`defaults/main.yml`](defaults/main.yml) for the full list of supported op
 
 💡 For an Ansible playbook which integrates this role and makes it easier to use, see the [Mother-of-All-Self-Hosting Ansible playbook](https://github.com/mother-of-all-self-hosting/mash-playbook).
 
-## Things worth knowing before exposing it
-
-### It reports usage statistics by default
-
-On a fresh installation Stirling PDF turns its analytics (PostHog and the Scarf pixel) on by itself, because the setting it ships defaults to "ask the administrator", which a container deployment cannot do. To turn it off:
-
-```yaml
-stirling_pdf_environment_variables_additional_variables: |
-  SYSTEM_ENABLEANALYTICS=false
-```
-
 ## Development
 
 ### pre-commit
