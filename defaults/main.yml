@@ -95,7 +95,7 @@ stirling_pdf_container_labels_traefik_priority: 0
 stirling_pdf_container_labels_traefik_entrypoints: web-secure
 stirling_pdf_container_labels_traefik_tls: "{{ stirling_pdf_container_labels_traefik_entrypoints != 'web' }}"
 stirling_pdf_container_labels_traefik_tls_certResolver: default  # noqa var-naming
-stirling_pdf_container_labels_traefik_middleware_basic_auth_enabled: false
+stirling_pdf_container_labels_traefik_middleware_basic_auth_enabled: true
 # See: https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/basicauth/
 stirling_pdf_container_labels_traefik_middleware_basic_auth_users: ""
 
