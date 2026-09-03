@@ -270,7 +270,7 @@
     - name: Show the Stirling PDF verification summary
       ansible.builtin.debug:
         msg:
-          - "systemd: {{ stirling_pdf_service.status.ActiveState }}"
-          - "version: {{ stirling_pdf_status.json.version }} (pinned: {{ stirling_pdf_role_defaults.stirling_pdf_version }})"
-          - "path prefix: serves at {{ stirling_pdf_molecule_path_prefix }}, 404 at /"
-          - "conversion: round trip through LibreOffice and back to text succeeded"
+          - "Stirling PDF systemd: {{ stirling_pdf_service.status.ActiveState }}"
+          - "Stirling PDF version: {{ stirling_pdf_status.json.version }} (pinned: {{ stirling_pdf_role_defaults.stirling_pdf_version }})"
+          - "Stirling PDF path prefix: serves at {{ stirling_pdf_molecule_path_prefix }}, 404 at /"
+          - "Stirling PDF conversion: round trip through LibreOffice and back to text succeeded"
