@@ -70,14 +70,11 @@
       retries: 120
       delay: 5
 
-    - name: Assert Stirling PDF runs the version the role pins
+    - name: Assert the running Stirling PDF is the version this role installs
       ansible.builtin.assert:
         that: stirling_pdf_status.json.version == stirling_pdf_molecule_expected_version
-        fail_msg: >-
-          Stirling PDF reports version {{ stirling_pdf_status.json.version }},
-          but defaults/main.yml pins {{ stirling_pdf_role_defaults.stirling_pdf_version }}
-          (expected {{ stirling_pdf_molecule_expected_version }})
-        success_msg: "Stirling PDF runs {{ stirling_pdf_status.json.version }}, as pinned by stirling_pdf_version"
+        fail_msg: "Stirling PDF reports {{ stirling_pdf_status.json.version | default('none') }}, expected {{ stirling_pdf_molecule_expected_version }}"
+        success_msg: "Stirling PDF reports {{ stirling_pdf_status.json.version }}"
 
     - name: Inspect the Stirling PDF container
       ansible.builtin.command:
