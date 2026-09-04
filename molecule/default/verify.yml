@@ -20,12 +20,10 @@
     stirling_pdf_molecule_work_path: /root/stirling-pdf-molecule
 
   tasks:
-    # Only leaf literals can be read this way, and only role-describing ones:
-    # anything the scenario tunes must come from the scenario's group_vars,
-    # which this would otherwise outrank. `stirling_pdf_version` is the literal
-    # that Renovate bumps, which is exactly what the running service is held
-    # against below.
-    - name: Read the role's defaults for Stirling PDF verification
+    # The role is not included in this playbook, so its defaults are not in
+    # scope. Reading defaults/main.yml directly ties the version assertion
+    # below.
+    - name: Load the role defaults
       ansible.builtin.include_vars:
         file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
         name: stirling_pdf_role_defaults
