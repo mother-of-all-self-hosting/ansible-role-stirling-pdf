@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 ---
-- name: Inject a message about the the role being in maintenance mode on version 1
+- name: Inject a message about the role being in maintenance mode on version 1
   ansible.builtin.set_fact:
     devture_playbook_runtime_messages_list: |
       {{
