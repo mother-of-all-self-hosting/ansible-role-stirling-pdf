@@ -87,16 +87,11 @@
     # The image label carries the full pinned tag, variant suffix included,
     # which the application's own version report does not: an `ultra-lite`
     # image reports the very same version as the `fat` one.
-    - name: Assert the running container is built from the pinned image tag
+    - name: Assert the running Stirling PDF is the version this role installs
       ansible.builtin.assert:
-        that: >-
-          stirling_pdf_molecule_container.Config.Labels['org.opencontainers.image.version']
-          == stirling_pdf_role_defaults.stirling_pdf_version
-        fail_msg: >-
-          The running container is labelled
-          {{ stirling_pdf_molecule_container.Config.Labels['org.opencontainers.image.version'] | default('(no version label)') }},
-          but defaults/main.yml pins {{ stirling_pdf_role_defaults.stirling_pdf_version }}
-        success_msg: "The running container is built from {{ stirling_pdf_role_defaults.stirling_pdf_version }}"
+        that: "stirling_pdf_molecule_container.Config.Labels['org.opencontainers.image.version'] == stirling_pdf_defaults.stirling_pdf_version"
+        fail_msg: "Stirling PDF reports {{ tirling_pdf_molecule_container.Config.Labels['org.opencontainers.image.version'] | default('none') }}, expected {{ stirling_pdf_defaults.stirling_pdf_version }}"
+        success_msg: "Stirling PDF reports {{ tirling_pdf_molecule_container.Config.Labels['org.opencontainers.image.version'] }}"
 
     - name: Assert the container runs as the configured user
       ansible.builtin.assert:
