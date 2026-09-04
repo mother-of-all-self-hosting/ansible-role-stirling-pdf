@@ -26,13 +26,13 @@
     - name: Load the role defaults
       ansible.builtin.include_vars:
         file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
-        name: stirling_pdf_role_defaults
+        name: stirling_pdf_defaults
 
     - name: Determine the Stirling PDF version the role pins
       ansible.builtin.set_fact:
         # `1.5.0-fat` -> `1.5.0`. The variant suffix names the image flavour and
         # is not part of what the application reports about itself.
-        stirling_pdf_molecule_expected_version: "{{ stirling_pdf_role_defaults.stirling_pdf_version | regex_replace('-.*$', '') }}"
+        stirling_pdf_molecule_expected_version: "{{ stirling_pdf_defaults.stirling_pdf_version | regex_replace('-.*$', '') }}"
 
     - name: Wait for the Stirling PDF systemd service to become active (up to 180s)
       ansible.builtin.systemd:
@@ -269,6 +269,6 @@
       ansible.builtin.debug:
         msg:
           - "Stirling PDF systemd: {{ stirling_pdf_service.status.ActiveState }}"
-          - "Stirling PDF version: {{ stirling_pdf_status.json.version }} (pinned: {{ stirling_pdf_role_defaults.stirling_pdf_version }})"
+          - "Stirling PDF version: {{ stirling_pdf_status.json.version }} (pinned: {{ stirling_pdf_defaults.stirling_pdf_version }})"
           - "Stirling PDF path prefix: serves at {{ stirling_pdf_molecule_path_prefix }}, 404 at /"
           - "Stirling PDF conversion: round trip through LibreOffice and back to text succeeded"
