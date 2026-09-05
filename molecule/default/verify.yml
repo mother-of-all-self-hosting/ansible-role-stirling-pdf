@@ -90,8 +90,8 @@
     - name: Assert the running Stirling PDF is the version this role installs
       ansible.builtin.assert:
         that: "stirling_pdf_molecule_container.Config.Labels['org.opencontainers.image.version'] == stirling_pdf_defaults.stirling_pdf_version"
-        fail_msg: "Stirling PDF reports {{ tirling_pdf_molecule_container.Config.Labels['org.opencontainers.image.version'] | default('none') }}, expected {{ stirling_pdf_defaults.stirling_pdf_version }}"
-        success_msg: "Stirling PDF reports {{ tirling_pdf_molecule_container.Config.Labels['org.opencontainers.image.version'] }}"
+        fail_msg: "Stirling PDF reports {{ stirling_pdf_molecule_container.Config.Labels['org.opencontainers.image.version'] | default('none') }}, expected {{ stirling_pdf_defaults.stirling_pdf_version }}"
+        success_msg: "Stirling PDF reports {{ stirling_pdf_molecule_container.Config.Labels['org.opencontainers.image.version'] }}"
 
     - name: Assert the container runs as the configured user
       ansible.builtin.assert:
@@ -264,6 +264,6 @@
       ansible.builtin.debug:
         msg:
           - "Stirling PDF systemd: {{ stirling_pdf_service.status.ActiveState }}"
-          - "Stirling PDF version: {{ stirling_pdf_status.json.version }} (pinned: {{ stirling_pdf_defaults.stirling_pdf_version }})"
+          - "Stirling PDF version: {{ stirling_pdf_status.json.version }}"
           - "Stirling PDF path prefix: serves at {{ stirling_pdf_molecule_path_prefix }}, 404 at /"
           - "Stirling PDF conversion: round trip through LibreOffice and back to text succeeded"
