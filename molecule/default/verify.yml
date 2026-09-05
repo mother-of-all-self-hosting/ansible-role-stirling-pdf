@@ -28,12 +28,6 @@
         file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
         name: stirling_pdf_defaults
 
-    - name: Determine the Stirling PDF version the role pins
-      ansible.builtin.set_fact:
-        # `1.5.0-fat` -> `1.5.0`. The variant suffix names the image flavour and
-        # is not part of what the application reports about itself.
-        stirling_pdf_molecule_expected_version: "{{ stirling_pdf_defaults.stirling_pdf_version | regex_replace('-.*$', '') }}"
-
     - name: Wait for the Stirling PDF systemd service to become active (up to 180s)
       ansible.builtin.systemd:
         name: stirling-pdf.service
@@ -67,6 +61,12 @@
       until: (stirling_pdf_status.status | default(0)) == 200 and (stirling_pdf_status.json.status | default('')) == 'UP'
       retries: 120
       delay: 5
+
+    - name: Determine the Stirling PDF version the role pins
+      ansible.builtin.set_fact:
+        # `1.5.0-fat` -> `1.5.0`. The variant suffix names the image flavour and
+        # is not part of what the application reports about itself.
+        stirling_pdf_molecule_expected_version: "{{ stirling_pdf_defaults.stirling_pdf_version | regex_replace('-.*$', '') }}"
 
     - name: Assert the running Stirling PDF is the version this role installs
       ansible.builtin.assert:
