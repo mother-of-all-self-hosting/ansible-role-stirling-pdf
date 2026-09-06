@@ -77,12 +77,12 @@
     - name: Inspect the Stirling PDF container
       ansible.builtin.command:
         cmd: docker container inspect stirling-pdf
-      register: stirling_pdf_container_inspection
+      register: stirling_pdf_container_raw
       changed_when: false
 
     - name: Parse the Stirling PDF container inspection
       ansible.builtin.set_fact:
-        stirling_pdf_molecule_container: "{{ (stirling_pdf_container_inspection.stdout | from_json)[0] }}"
+        stirling_pdf_molecule_container: "{{ (stirling_pdf_container_raw.stdout | from_json)[0] }}"
 
     # The image label carries the full pinned tag, variant suffix included,
     # which the application's own version report does not: an `ultra-lite`
