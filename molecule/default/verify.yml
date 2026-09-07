@@ -74,12 +74,6 @@
         # is not part of what the application reports about itself.
         stirling_pdf_molecule_expected_version: "{{ stirling_pdf_defaults.stirling_pdf_version | regex_replace('-.*$', '') }}"
 
-    - name: Assert the running Stirling PDF is the version this role installs
-      ansible.builtin.assert:
-        that: stirling_pdf_status.json.version == stirling_pdf_molecule_expected_version
-        fail_msg: "Stirling PDF reports {{ stirling_pdf_status.json.version | default('none') }}, expected {{ stirling_pdf_molecule_expected_version }}"
-        success_msg: "Stirling PDF reports {{ stirling_pdf_status.json.version }}"
-
     - name: Inspect the Stirling PDF container
       ansible.builtin.command:
         cmd: docker container inspect stirling-pdf
@@ -95,7 +89,9 @@
     # image reports the very same version as the `fat` one.
     - name: Assert the running Stirling PDF is the version this role installs
       ansible.builtin.assert:
-        that: "stirling_pdf_molecule_container.Config.Labels['org.opencontainers.image.version'] == stirling_pdf_defaults.stirling_pdf_version"
+        that:
+          - stirling_pdf_status.json.version == stirling_pdf_molecule_expected_version
+          - stirling_pdf_molecule_container.Config.Labels['org.opencontainers.image.version'] == stirling_pdf_defaults.stirling_pdf_version
         fail_msg: "Stirling PDF reports {{ stirling_pdf_molecule_container.Config.Labels['org.opencontainers.image.version'] | default('none') }}, expected {{ stirling_pdf_defaults.stirling_pdf_version }}"
         success_msg: "Stirling PDF reports {{ stirling_pdf_molecule_container.Config.Labels['org.opencontainers.image.version'] }}"
 
