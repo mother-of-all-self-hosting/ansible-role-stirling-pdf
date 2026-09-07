@@ -62,7 +62,7 @@
       retries: 120
       delay: 5
 
-    - name: Determine the Stirling PDF version the role pins
+    - name: Determine the version of the running Stirling PDF
       ansible.builtin.set_fact:
         # `1.5.0-fat` -> `1.5.0`. The variant suffix names the image flavour and
         # is not part of what the application reports about itself.
