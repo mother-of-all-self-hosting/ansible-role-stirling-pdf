@@ -51,7 +51,7 @@
     - name: Retrieve the Stirling PDF systemd service log for debugging
       when: stirling_pdf_debug_service_enabled | bool
       ansible.builtin.command:
-        cmd: journalctl -xeu stirling-pdf.service
+        cmd: journalctl --no-pager --output=cat --unit=stirling-pdf.service
       changed_when: false
 
     # `Restart=always` keeps the unit `active` even while the container crash
