@@ -20,6 +20,8 @@
     stirling_pdf_molecule_work_path: /root/stirling-pdf-molecule
 
   tasks:
+    - name: Verify that Stirling PDF works
+      block:
     # The role is not included in this playbook, so its defaults are not in
     # scope. Reading defaults/main.yml directly ties the version assertion
     # below.
@@ -269,3 +271,19 @@
           - "Stirling PDF version: {{ stirling_pdf_status.json.version }}"
           - "Stirling PDF path prefix: serves at {{ stirling_pdf_molecule_path_prefix }}, 404 at /"
           - "Stirling PDF conversion: round trip through LibreOffice and back to text succeeded"
+
+      rescue:
+        # Whatever went wrong, the reason is almost always in the systemd service log.
+        - name: Retrieve the Stirling PDF systemd service log
+          ansible.builtin.command:
+            cmd: journalctl --no-pager --output=cat --unit=stirling-pdf.service
+          register: stirling_pdf_service_log
+          changed_when: false
+
+        - name: Show the Stirling PDF systemd service log
+          ansible.builtin.debug:
+            var: stirling_pdf_service_log.stdout_lines
+
+        - name: Fail because verification did not pass
+          ansible.builtin.fail:
+            msg: "Stirling PDF verification failed. The systemd service log is printed above."
