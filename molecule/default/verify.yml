@@ -19,6 +19,9 @@
 
     stirling_pdf_molecule_work_path: /root/stirling-pdf-molecule
 
+    stirling_pdf_verify_units:
+      - stirling-pdf.service
+
   tasks:
     - name: Verify that Stirling PDF works
       block:
@@ -30,13 +33,14 @@
             file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
             name: stirling_pdf_defaults
 
-        - name: Wait for the Stirling PDF systemd service to become active (up to 180s)
+        - name: Wait for the Stirling PDF systemd services to become active (up to 180s each)
           ansible.builtin.systemd_service:
-            name: stirling-pdf.service
-          register: stirling_pdf_service
-          until: stirling_pdf_service.status.ActiveState == 'active'
+            name: "{{ item }}"
+          register: stirling_pdf_services
+          until: stirling_pdf_services.status.ActiveState == 'active'
           retries: 36
           delay: 5
+          loop: "{{ stirling_pdf_verify_units }}"
           # So that giving up is reported by the assertion below rather than as a
           # wall of systemd unit properties.
           failed_when: false
@@ -44,17 +48,20 @@
         # `Restart=always` in the systemd unit means that even a container which crashes
         # and gets restarted reads as active here, so this is a precondition rather than
         # a result.
-        - name: Assert the Stirling PDF systemd service is active
+        - name: Assert the Stirling PDF systemd services are active
           ansible.builtin.assert:
-            that: stirling_pdf_service.status.ActiveState == 'active'
-            fail_msg: "stirling-pdf.service is not active ({{ stirling_pdf_service.status.ActiveState }})"
-            success_msg: "stirling-pdf.service is active"
+            that: stirling_pdf_services.results | map(attribute='status.ActiveState') | unique | list == ['active']
+            fail_msg: >-
+              Not every service is active:
+              {{ dict(stirling_pdf_verify_units | zip(stirling_pdf_services.results | map(attribute='status.ActiveState'))) }}
+            success_msg: "Every systemd service is active"
 
-        - name: Retrieve the Stirling PDF systemd service log for debugging
+        - name: Retrieve the Stirling PDF systemd services log for debugging
           when: stirling_pdf_debug_service_enabled | bool
           ansible.builtin.command:
-            cmd: journalctl --no-pager --output=cat --unit=stirling-pdf.service
+            cmd: "journalctl --no-pager --output=cat --unit={{ item }}"
           changed_when: false
+          loop: "{{ stirling_pdf_verify_units }}"
 
         # `Restart=always` keeps the unit `active` even while the container crash
         # loops, and Stirling PDF is a Spring application that keeps the port closed
@@ -267,7 +274,7 @@
         - name: Show the Stirling PDF verification summary
           ansible.builtin.debug:
             msg:
-              - "Stirling PDF systemd: {{ stirling_pdf_service.status.ActiveState }}"
+              - "Stirling PDF systemd: {% for unit, state in stirling_pdf_verify_units | zip(stirling_pdf_services.results | map(attribute='status.ActiveState')) %}{{ unit }} ({{ state }}){% if not loop.last %}, {% endif %}{% endfor %}"
               - "Stirling PDF version: {{ stirling_pdf_status.json.version }}"
               - "Stirling PDF path prefix: serves at {{ stirling_pdf_molecule_path_prefix }}, 404 at /"
               - "Stirling PDF conversion: round trip through LibreOffice and back to text succeeded"
