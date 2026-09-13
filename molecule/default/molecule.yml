@@ -30,6 +30,7 @@ provisioner:
       all:
         # Helper variables
         stirling_pdf_debug_service_enabled: false
+        stirling_pdf_restarts_check_enabled: true
 
         # Where the verification playbook reaches the service, and the values it
         # expects to find there. `stirling_pdf_molecule_path_prefix` deliberately
