@@ -134,6 +134,11 @@ stirling_pdf_container_labels_additional_labels_custom: []
 # Specify the size of the container's tmpfs volume
 stirling_pdf_container_tmpfs_size: "100m"
 
+# A list of extra arguments to pass to the container (`docker create` command)
+stirling_pdf_container_extra_arguments: "{{ stirling_pdf_container_extra_arguments_auto + stirling_pdf_container_extra_arguments_custom }}"
+stirling_pdf_container_extra_arguments_auto: []
+stirling_pdf_container_extra_arguments_custom: []
+
 # Specifies the value of the `X-XSS-Protection` header
 # Stops pages from loading when they detect reflected cross-site scripting (XSS) attacks.
 #
