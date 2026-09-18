@@ -35,14 +35,14 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       {% endif %}
       --env-file={{ stirling_pdf_base_path }}/env \
       --label-file={{ stirling_pdf_base_path }}/labels \
-      {% for volume in stirling_pdf_container_additional_volumes %}
-      --mount type={{ volume.type | default('bind' if '/' in volume.src else 'volume') }},src={{ volume.src }},dst={{ volume.dst }}{{ (',' + volume.options) if volume.options | default('') else '' }} \
-      {% endfor %}
       --mount type=bind,src={{ stirling_pdf_logs_path }},dst=/logs \
       --mount type=bind,src={{ stirling_pdf_data_path }}/config,dst=/configs \
       --mount type=bind,src={{ stirling_pdf_trainingdata_path }},dst=/usr/share/tessdata \
       --mount type=bind,src={{ stirling_pdf_data_path }}/customFiles,dst=/customFiles \
       --mount type=bind,src={{ stirling_pdf_data_path }}/pipeline,dst=/pipeline \
+      {% for volume in stirling_pdf_container_additional_volumes %}
+      --mount type={{ volume.type | default('bind' if '/' in volume.src else 'volume') }},src={{ volume.src }},dst={{ volume.dst }}{{ (',' + volume.options) if volume.options | default('') else '' }} \
+      {% endfor %}
       --tmpfs=/tmp:rw,noexec,nosuid,size={{ stirling_pdf_container_tmpfs_size }} \
       {% for arg in stirling_pdf_container_extra_arguments %}
       {{ arg }} \
