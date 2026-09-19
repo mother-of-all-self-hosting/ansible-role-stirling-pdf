@@ -47,7 +47,10 @@ ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} create \
       {% for arg in stirling_pdf_container_extra_arguments %}
       {{ arg }} \
       {% endfor %}
-      {{ stirling_pdf_container_image }}
+      {{ stirling_pdf_container_image }} \
+      {% for arg in stirling_pdf_process_extra_arguments %}
+      {{ arg }} \
+      {% endfor %}
 
 {% for network in stirling_pdf_container_additional_networks %}
 ExecStartPre={{ devture_systemd_docker_base_host_command_docker }} network connect {{ network }} {{ stirling_pdf_identifier }}
