@@ -61,7 +61,7 @@ After adjusting the hostname, make sure to adjust your DNS records to point the 
 
 ### Configuring HTTP Basic authentication
 
-This role is configured to enable the HTTP Basic authentication on Traefik by default, considering the nature of the service. See [this page](https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/basicauth/) on the Traefik's documentation for details.
+This role is configured to enable the HTTP Basic authentication on Traefik by default, considering the nature of the service. Refer to [this page](https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/basicauth/) on the Traefik's documentation for details.
 
 You can use `htpasswd` to generate the user and password pair, which needs to be set to `stirling_pdf_container_labels_traefik_middleware_basic_auth_users`.
 
