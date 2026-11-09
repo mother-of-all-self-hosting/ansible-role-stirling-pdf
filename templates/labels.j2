@@ -21,7 +21,7 @@ traefik.http.middlewares.{{ stirling_pdf_identifier }}-basic-auth.basicauth.user
 {% endif %}
 
 {% if stirling_pdf_container_labels_traefik_path_prefix != '/' %}
-traefik.http.middlewares.{{ stirling_pdf_identifier }}-slashless-redirect.redirectregex.regex=^({{ stirling_pdf_container_labels_traefik_path_prefix | quote }})$
+traefik.http.middlewares.{{ stirling_pdf_identifier }}-slashless-redirect.redirectregex.regex=^(https?://[^/]+{{ stirling_pdf_container_labels_traefik_path_prefix | regex_escape }})$
 traefik.http.middlewares.{{ stirling_pdf_identifier }}-slashless-redirect.redirectregex.replacement=${1}/
 {% set middlewares = middlewares + [stirling_pdf_identifier + '-slashless-redirect'] %}
 {% endif %}
