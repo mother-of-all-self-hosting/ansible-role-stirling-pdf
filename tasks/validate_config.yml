@@ -29,9 +29,6 @@
   with_items:
     - stirling_pdf_uid
     - stirling_pdf_gid
-    - stirling_pdf_hostname
-    - stirling_pdf_path_prefix
-    - stirling_pdf_container_network
 
 - name: Run if Traefik is enabled
   when: stirling_pdf_container_labels_traefik_enabled | bool
